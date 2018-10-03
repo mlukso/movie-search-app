@@ -1,28 +1,80 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
+import Form from './Form';
+import List from './List';
 
 class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
-}
 
-export default App;
+    constructor() {
+      super();
+      this.state = {
+        inputValue: '',
+        movie: []
+      };
+    }
+
+    handleChange = (e) => {
+      this.setState({
+          inputValue: e.target.value
+      })
+    }
+  
+    handleSubmit = (e) => {
+      const {movie, inputValue} = this.state
+
+      e.preventDefault();
+      const newMovies = movie.slice();
+      if(this.state.inputValue){  
+      this.performSearch(inputValue).then((data) => {
+        //This parses the results
+        const movieResult = data
+  
+        const newMovie = {        
+          id: movie.length + 1,
+          title: movieResult.Title,
+          year: movieResult.Year,
+          poster: movieResult.Poster
+        };
+
+        newMovies.push(newMovie);
+
+        this.setState({
+          movie: newMovies,
+          inputValue: ''
+        })
+      })
+    }
+  }
+
+  performSearch = (query) => {
+    //This performs the search
+    return fetch(`http://www.omdbapi.com/?apikey=86a0f0d9&t=${query}`)
+      .then(response => response.json()) 
+  }
+
+    // componentDidMount() {   
+    //   this.performSearch()
+    // }
+  
+    render() {
+      const {movie, inputValue} = this.state
+
+      return (
+        <div className="App" id="main">
+          <h1>
+            A Simple Movie Search
+          </h1>
+          <Form 
+            handleChange = {this.handleChange}
+            inputValue = {inputValue}  
+            handleSubmit={this.handleSubmit}
+          /> 
+          <List 
+            movie={movie}
+          />
+        </div>
+      );
+    }
+  }
+  
+  export default App;
